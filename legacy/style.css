@@ -1,0 +1,39 @@
+* {
+  color: #4b0101;
+}
+#body {
+  background-color: #ecdfca;
+  background-image: url("https://www.transparenttextures.com/patterns/always-grey.png");
+  font-family: "Playfair Display", serif;
+  font-family: "Roboto", sans-serif;
+}
+.card {
+  margin: 0 5rem 1.2rem 0;
+  float: left;
+  display: flex;
+  flex-direction: column;
+}
+.card-body {
+  text-align: center;
+  background-color: #ecdfca;
+  background-image: url("https://www.transparenttextures.com/patterns/always-grey.png");
+}
+.card-img-top {
+  object-fit: cover;
+  height: 13rem;
+}
+#carouselExampleDark {
+  width: 38rem;
+  height: 43rem;
+  float: left;
+  margin: 1rem 2rem;
+}
+.navbar {
+  margin: 1rem 4rem;
+}
+.nav-link {
+  margin-left: 1.5rem;
+}
+#special {
+  float: right;
+}
