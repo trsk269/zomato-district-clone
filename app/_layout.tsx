@@ -12,6 +12,13 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 
+import {
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from "@expo-google-fonts/space-grotesk";
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -28,6 +35,11 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SpaceGrotesk: SpaceGrotesk_400Regular,
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
     ...FontAwesome.font,
   });
 

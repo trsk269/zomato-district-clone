@@ -6,16 +6,21 @@ import { useThemeColor } from "./Themed";
 
 interface ScreenContainerProps {
   title: string;
+  hideTitle?: boolean;
   children?: React.ReactNode;
 }
 
-export function ScreenContainer({ title, children }: ScreenContainerProps) {
+export function ScreenContainer({
+  title,
+  hideTitle = false,
+  children,
+}: ScreenContainerProps) {
   const backgroundColor = useThemeColor({}, "background");
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       <View style={styles.container}>
-        <Text style={styles.title}>{title}</Text>
+        {!hideTitle && <Text style={styles.title}>{title}</Text>}
         {children}
       </View>
     </SafeAreaView>
@@ -28,13 +33,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 20,
+    paddingTop: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "SpaceGrotesk_700Bold",
+    marginBottom: 20,
   },
 });
