@@ -15,7 +15,7 @@ export function ScreenContainer({
   hideTitle = false,
   children,
 }: ScreenContainerProps) {
-  const backgroundColor = useThemeColor({}, "background");
+  const backgroundColor = "#09090B"; // Forced hard dark mode
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
