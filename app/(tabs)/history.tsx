@@ -1,374 +1,543 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   View as DefaultView,
-  SectionList,
+  ImageBackground,
+  Animated,
+  Dimensions,
+  StatusBar,
 } from "react-native";
-import { ScreenContainer } from "@/components/ScreenContainer";
-import { View, Text, useThemeColor } from "@/components/Themed";
+import { Text } from "@/components/Themed";
 import {
-  ChevronLeft,
-  Search,
-  Filter,
-  IceCream,
-  Utensils,
-  BusFront,
-  Coffee,
-  ShoppingBag,
-  CreditCard,
-  ArrowRightLeft,
+  ArrowLeft,
+  Bookmark,
+  Share2,
+  MapPin,
+  CalendarClock,
   ChevronRight,
+  Crown,
+  Gem,
+  Images,
 } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
-interface Transaction {
-  id: string;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const HERO_HEIGHT = SCREEN_HEIGHT * 0.52;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface EventDetailScreenProps {
+  navigation?: any;
+  route?: any;
+}
+
+// ─── Info Row ─────────────────────────────────────────────────────────────────
+interface InfoRowProps {
+  icon: React.ElementType;
   title: string;
-  category: string;
-  amount: string;
-  time: string;
+  subtitle: string;
+  onPress?: () => void;
+}
+
+const InfoRow = ({ icon: Icon, title, subtitle, onPress }: InfoRowProps) => (
+  <TouchableOpacity
+    style={styles.infoRow}
+    activeOpacity={0.7}
+    onPress={onPress}
+  >
+    <DefaultView style={styles.infoIconBox}>
+      <Icon color="#9CA3AF" size={18} strokeWidth={1.8} />
+    </DefaultView>
+    <DefaultView style={styles.infoText}>
+      <Text style={styles.infoTitle}>{title}</Text>
+      <Text style={styles.infoSubtitle}>{subtitle}</Text>
+    </DefaultView>
+    <ChevronRight color="#3D3D4E" size={16} strokeWidth={2} />
+  </TouchableOpacity>
+);
+
+// ─── Highlight Card ───────────────────────────────────────────────────────────
+interface HighlightCardProps {
   icon: React.ElementType;
   iconColor: string;
-  type: "income" | "expense";
+  iconBg: string;
+  heading: string;
+  body: string;
 }
 
-interface TransactionSection {
-  title: string;
-  data: Transaction[];
-}
+const HighlightCard = ({
+  icon: Icon,
+  iconColor,
+  iconBg,
+  heading,
+  body,
+}: HighlightCardProps) => (
+  <DefaultView style={styles.highlightCard}>
+    <DefaultView style={[styles.highlightIconBox, { backgroundColor: iconBg }]}>
+      <Icon color={iconColor} size={18} strokeWidth={1.8} />
+    </DefaultView>
+    <Text style={styles.highlightHeading}>{heading}</Text>
+    <Text style={styles.highlightBody}>{body}</Text>
+  </DefaultView>
+);
 
-const MOCK_SECTIONS: TransactionSection[] = [
-  {
-    title: "Today",
-    data: [
-      {
-        id: "1",
-        title: "Gelato Stop",
-        category: "Dessert",
-        amount: "-$12.50",
-        time: "03:45 PM",
-        icon: IceCream,
-        iconColor: "#A855F7",
-        type: "expense",
-      },
-      {
-        id: "2",
-        title: "Main Street Bus",
-        category: "Transport",
-        amount: "-$2.50",
-        time: "02:20 PM",
-        icon: BusFront,
-        iconColor: "#3B82F6",
-        type: "expense",
-      },
-      {
-        id: "3",
-        title: "Starbucks Coffee",
-        category: "Drinks",
-        amount: "-$5.75",
-        time: "09:15 AM",
-        icon: Coffee,
-        iconColor: "#F59E0B",
-        type: "expense",
-      },
-    ],
-  },
-  {
-    title: "Yesterday",
-    data: [
-      {
-        id: "4",
-        title: "Sushi House",
-        category: "Food",
-        amount: "-$42.00",
-        time: "07:30 PM",
-        icon: Utensils,
-        iconColor: "#10B981",
-        type: "expense",
-      },
-      {
-        id: "5",
-        title: "Monthly Salary",
-        category: "Income",
-        amount: "+$4,500.00",
-        time: "09:00 AM",
-        icon: CreditCard,
-        iconColor: "#10B981",
-        type: "income",
-      },
-      {
-        id: "6",
-        title: "Grocery Mart",
-        category: "Shopping",
-        amount: "-$85.20",
-        time: "04:45 PM",
-        icon: ShoppingBag,
-        iconColor: "#6366F1",
-        type: "expense",
-      },
-    ],
-  },
-  {
-    title: "Sept 12, 2025",
-    data: [
-      {
-        id: "7",
-        title: "App Store",
-        category: "Entertainment",
-        amount: "-$9.99",
-        time: "01:15 PM",
-        icon: ArrowRightLeft,
-        iconColor: "#F43F5E",
-        type: "expense",
-      },
-    ],
-  },
-];
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+export default function EventDetailScreen({
+  navigation,
+}: EventDetailScreenProps) {
+  const insets = useSafeAreaInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-const FilterPill = ({ title, active }: { title: string; active?: boolean }) => {
-  const tintColor = useThemeColor({}, "tint");
-  const cardColor = useThemeColor({}, "card");
-  const textColor = useThemeColor({}, "text");
+  // Navbar fade-in on scroll
+  const navBg = scrollY.interpolate({
+    inputRange: [HERO_HEIGHT - 100, HERO_HEIGHT - 40],
+    outputRange: ["rgba(10,10,14,0)", "rgba(10,10,14,1)"],
+    extrapolate: "clamp",
+  });
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.filterPill,
-        {
-          backgroundColor: active ? tintColor : cardColor,
-          borderColor: active ? tintColor : "transparent",
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.filterText,
-          { color: active ? "#FFF" : textColor, opacity: active ? 1 : 0.6 },
-        ]}
-      >
-        {title}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
-const TransactionRow = ({ item }: { item: Transaction }) => {
-  const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
-  const isIncome = item.type === "income";
-
-  return (
-    <TouchableOpacity
-      style={[styles.transactionItem, { backgroundColor: cardColor }]}
-    >
-      <DefaultView
-        style={[
-          styles.iconContainer,
-          { backgroundColor: `${item.iconColor}15` },
-        ]}
-      >
-        <item.icon color={item.iconColor} size={22} />
-      </DefaultView>
-      <DefaultView style={styles.detailsContainer}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemSubtitle}>
-          {item.category} • {item.time}
-        </Text>
-      </DefaultView>
-      <DefaultView style={styles.amountContainer}>
-        <Text
-          style={[
-            styles.amountText,
-            { color: isIncome ? "#10B981" : "#F43F5E" },
-          ]}
-        >
-          {item.amount}
-        </Text>
-        <ChevronRight
-          color={textColor}
-          size={16}
-          style={{ opacity: 0.2, marginLeft: 8 }}
-        />
-      </DefaultView>
-    </TouchableOpacity>
-  );
-};
-
-export default function HistoryScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const textColor = useThemeColor({}, "text");
-  const cardColor = useThemeColor({}, "card");
-  const borderColor = useThemeColor({}, "border");
-
-  return (
-    <ScreenContainer title="History" hideTitle>
-      {/* Header Area */}
-      <DefaultView style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <ChevronLeft color={textColor} size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transaction History</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter color={textColor} size={20} />
-        </TouchableOpacity>
-      </DefaultView>
-
-      {/* Search Bar */}
-      <DefaultView
-        style={[
-          styles.searchContainer,
-          { backgroundColor: cardColor, borderColor },
-        ]}
-      >
-        <Search color={textColor} size={20} style={{ opacity: 0.4 }} />
-        <TextInput
-          style={[styles.searchInput, { color: textColor }]}
-          placeholder="Search transactions..."
-          placeholderTextColor="rgba(255, 255, 255, 0.3)"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </DefaultView>
-
-      {/* Filter Options */}
-      {/* <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.filtersScroll}
-        contentContainerStyle={styles.filtersContent}
-      >
-        <FilterPill title="All" active />
-        <FilterPill title="Food" />
-        <FilterPill title="Transport" />
-        <FilterPill title="Income" />
-        <FilterPill title="Shopping" />
-        <FilterPill title="Dessert" />
-      </ScrollView> */}
-
-      {/* History List */}
-      <SectionList
-        sections={MOCK_SECTIONS}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TransactionRow item={item} />}
-        renderSectionHeader={({ section: { title } }) => (
-          <DefaultView style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{title}</Text>
-          </DefaultView>
-        )}
-        stickySectionHeadersEnabled={false}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListFooterComponent={<DefaultView style={{ height: 100 }} />}
+    <DefaultView style={styles.root}>
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
       />
-    </ScreenContainer>
+
+      {/* ── Floating Navbar ── */}
+      <Animated.View
+        style={[
+          styles.navbar,
+          { backgroundColor: navBg, paddingTop: insets.top + 8 },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.navBtn}
+          onPress={() => navigation?.goBack()}
+          activeOpacity={0.8}
+        >
+          <ArrowLeft color="#FFF" size={20} strokeWidth={2} />
+        </TouchableOpacity>
+        <DefaultView style={styles.navActions}>
+          <TouchableOpacity style={styles.navBtn} activeOpacity={0.8}>
+            <Bookmark color="#FFF" size={20} strokeWidth={2} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navBtn} activeOpacity={0.8}>
+            <Share2 color="#FFF" size={20} strokeWidth={2} />
+          </TouchableOpacity>
+        </DefaultView>
+      </Animated.View>
+
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false },
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* ── Hero Image ── */}
+        <DefaultView style={{ height: HERO_HEIGHT }}>
+          <ImageBackground
+            source={{ uri: "https://picsum.photos/seed/ipl2026/800/1000" }}
+            style={styles.hero}
+            resizeMode="cover"
+          >
+            <LinearGradient
+              colors={["transparent", "rgba(10,10,14,0.6)", "#0A0A0E"]}
+              locations={[0.3, 0.7, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+            {/* Gallery pill */}
+            <TouchableOpacity style={styles.galleryPill} activeOpacity={0.8}>
+              <Images color="#FFF" size={15} strokeWidth={2} />
+              <Text style={styles.galleryText}>Gallery</Text>
+            </TouchableOpacity>
+          </ImageBackground>
+        </DefaultView>
+
+        {/* ── Content Sheet ── */}
+        <DefaultView style={styles.sheet}>
+          {/* Tags */}
+          <DefaultView style={styles.tagsRow}>
+            <DefaultView style={styles.tag}>
+              <Text style={styles.tagText}>Cricket Matches</Text>
+            </DefaultView>
+            <DefaultView style={styles.tag}>
+              <Text style={styles.tagText}>Sports</Text>
+            </DefaultView>
+          </DefaultView>
+
+          {/* Title */}
+          <Text style={styles.eventTitle}>
+            TATA IPL 2026: Match 31 | Sunrisers Hyderabad vs Delhi Capitals
+          </Text>
+
+          {/* Date */}
+          <Text style={styles.eventDate}>Tue, 21 Apr, 7:30 PM</Text>
+
+          {/* Divider */}
+          <DefaultView style={styles.divider} />
+
+          {/* Info Rows */}
+          <InfoRow
+            icon={MapPin}
+            title="Rajiv Gandhi International Cricket Stadium, Hyderabad"
+            subtitle="646.8 km away"
+          />
+          <DefaultView style={styles.infoSep} />
+          <InfoRow
+            icon={CalendarClock}
+            title="Gates open at 4:30 PM"
+            subtitle="View full schedule & timeline"
+          />
+
+          {/* Divider */}
+          <DefaultView style={styles.divider} />
+
+          {/* Highlight Cards */}
+          <Text style={styles.sectionLabel}>Highlights</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.highlightRow}
+          >
+            <HighlightCard
+              icon={Crown}
+              iconColor="#FBBF24"
+              iconBg="rgba(251,191,36,0.12)"
+              heading="Why this event stands out"
+              body="High-octane clash: Sunrisers Hyderabad vs Delhi Capitals."
+            />
+            <HighlightCard
+              icon={Gem}
+              iconColor="#A78BFA"
+              iconBg="rgba(167,139,250,0.12)"
+              heading="Exclusive IPL perks"
+              body="Premium seats, hospitality boxes & more available."
+            />
+          </ScrollView>
+
+          {/* Offer Banner */}
+          <TouchableOpacity style={styles.offerBanner} activeOpacity={0.8}>
+            <ImageBackground
+              source={{ uri: "https://picsum.photos/seed/srh/120/80" }}
+              style={styles.offerImage}
+              imageStyle={{ borderRadius: 12 }}
+            />
+            <DefaultView style={styles.offerText}>
+              <Text style={styles.offerTag}>SRH fan jersey 2026</Text>
+              <Text style={styles.offerTitle}>
+                Buy 2 tickets, get a jersey free
+              </Text>
+            </DefaultView>
+            <ChevronRight color="#6B6A7A" size={16} strokeWidth={2} />
+          </TouchableOpacity>
+
+          {/* About */}
+          <Text style={styles.sectionLabel}>About the event</Text>
+          <Text style={styles.aboutText}>
+            Experience one of the most exciting rivalries in the TATA IPL 2026
+            season as the Sunrisers Hyderabad take on the Delhi Capitals at the
+            iconic Rajiv Gandhi International Cricket Stadium. Witness
+            world-class cricket action live with your family and friends.
+          </Text>
+
+          {/* Bottom spacer for sticky CTA */}
+          <DefaultView style={{ height: 110 }} />
+        </DefaultView>
+      </Animated.ScrollView>
+
+      {/* ── Sticky Bottom CTA ── */}
+      <DefaultView
+        style={[styles.stickyBar, { paddingBottom: insets.bottom + 12 }]}
+      >
+        <DefaultView>
+          <Text style={styles.saleLabel}>General Sale</Text>
+          <Text style={styles.priceText}>
+            ₹2,550 <Text style={styles.priceOnwards}>onwards</Text>
+          </Text>
+        </DefaultView>
+        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.85}>
+          <Text style={styles.bookBtnText}>Book tickets</Text>
+        </TouchableOpacity>
+      </DefaultView>
+    </DefaultView>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  header: {
+  root: {
+    flex: 1,
+    backgroundColor: "#0A0A0E",
+  },
+
+  // Navbar
+  navbar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(150, 150, 150, 0.1)",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontFamily: "SpaceGrotesk_700Bold",
-  },
-  filterButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(150, 150, 150, 0.1)",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: 16,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    marginBottom: 20,
+    paddingBottom: 10,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontFamily: "SpaceGrotesk_400Regular",
-    fontSize: 15,
-  },
-  filtersScroll: {
-    maxHeight: 45,
-    marginBottom: 20,
-  },
-  filtersContent: {
-    paddingRight: 20,
-  },
-  filterPill: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 1,
-  },
-  filterText: {
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 14,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  sectionHeader: {
-    paddingBottom: 12,
-    paddingTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_700Bold",
-    opacity: 0.4,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  transactionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 24,
-    marginBottom: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+  navBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.12)",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 16,
+    marginLeft: 8,
   },
-  detailsContainer: {
+  navActions: {
+    flexDirection: "row",
+  },
+
+  // Hero
+  hero: {
     flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    padding: 16,
   },
-  itemTitle: {
-    fontSize: 16,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-  },
-  itemSubtitle: {
-    fontSize: 12,
-    fontFamily: "SpaceGrotesk_400Regular",
-    opacity: 0.5,
-    marginTop: 2,
-  },
-  amountContainer: {
+  galleryPill: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.15)",
   },
-  amountText: {
-    fontSize: 16,
+  galleryText: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#FFF",
+  },
+
+  // Sheet
+  sheet: {
+    backgroundColor: "#0A0A0E",
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+
+  // Tags
+  tagsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 14,
+  },
+  tag: {
+    backgroundColor: "#1A1A24",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  tagText: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_500Medium",
+    color: "#9CA3AF",
+  },
+
+  // Title / Date
+  eventTitle: {
+    fontSize: 22,
     fontFamily: "SpaceGrotesk_700Bold",
+    color: "#F0EFF8",
+    lineHeight: 30,
+    marginBottom: 8,
+    letterSpacing: -0.3,
+  },
+  eventDate: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#F59E0B",
+    marginBottom: 20,
+  },
+
+  divider: {
+    height: 0.5,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginBottom: 16,
+  },
+
+  // Info rows
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingVertical: 4,
+    marginBottom: 4,
+  },
+  infoIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    backgroundColor: "#18181F",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.07)",
+  },
+  infoText: {
+    flex: 1,
+    gap: 2,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#E0DFF0",
+    lineHeight: 20,
+  },
+  infoSubtitle: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#5A5A6E",
+  },
+  infoSep: {
+    height: 12,
+  },
+
+  // Section label
+  sectionLabel: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#4B4A5E",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 12,
+    marginTop: 4,
+  },
+
+  // Highlight cards
+  highlightRow: {
+    gap: 10,
+    paddingBottom: 4,
+    marginBottom: 20,
+  },
+  highlightCard: {
+    backgroundColor: "#13121A",
+    borderRadius: 18,
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.07)",
+    padding: 16,
+    width: SCREEN_WIDTH * 0.65,
+    gap: 8,
+  },
+  highlightIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  highlightHeading: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#E0DFF0",
+  },
+  highlightBody: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#6B6A7A",
+    lineHeight: 19,
+  },
+
+  // Offer banner
+  offerBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#13121A",
+    borderRadius: 18,
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.07)",
+    padding: 12,
+    marginBottom: 24,
+  },
+  offerImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  offerText: {
+    flex: 1,
+    gap: 4,
+  },
+  offerTag: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#A78BFA",
+  },
+  offerTitle: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#E0DFF0",
+    lineHeight: 20,
+  },
+
+  // About
+  aboutText: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#6B6A7A",
+    lineHeight: 22,
+  },
+
+  // Sticky CTA bar
+  stickyBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#0A0A0E",
+    borderTopWidth: 0.5,
+    borderTopColor: "rgba(255,255,255,0.07)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 14,
+  },
+  saleLabel: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#22C55E",
+    marginBottom: 3,
+  },
+  priceText: {
+    fontSize: 22,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#F0EFF8",
+  },
+  priceOnwards: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#5A5A6E",
+  },
+  bookBtn: {
+    backgroundColor: "#F0EFF8",
+    borderRadius: 16,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+  },
+  bookBtnText: {
+    fontSize: 15,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#0A0A0E",
   },
 });
