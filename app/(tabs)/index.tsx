@@ -121,15 +121,16 @@ function CategoryCard({ item }: { item: (typeof CATEGORIES)[0] }) {
       onPress={() => router.push("/event")}
     >
       <DefaultView
-        style={[styles.catGlow, { backgroundColor: color + "25" }]}
+        style={[styles.catGlow, { backgroundColor: color + "15" }]}
       />
       <DefaultView
-        style={[styles.catIconBox, { backgroundColor: color + "20" }]}
+        style={[styles.catIconBox, { backgroundColor: color + "15" }]}
       >
-        <Icon size={26} color={color} strokeWidth={1.8} />
+        <Icon size={22} color={color} strokeWidth={2} />
       </DefaultView>
-      <Text style={styles.catLabel}>{label}</Text>
-      <DefaultView style={[styles.catAccentLine, { backgroundColor: color }]} />
+      <Text style={styles.catLabel} numberOfLines={1}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -511,49 +512,42 @@ const styles = StyleSheet.create({
   categoryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    rowGap: 12,
   },
   catCard: {
-    width: (width - 40 - 12) / 2,
-    flexDirection: "row",
+    width: "31.5%",
+    flexDirection: "column",
     alignItems: "center",
     paddingVertical: 18,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
+    paddingHorizontal: 8,
+    borderRadius: 18,
+    borderWidth: 1.2,
     overflow: "hidden",
     position: "relative",
   },
   catGlow: {
     position: "absolute",
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    top: -20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    top: -15,
     right: -10,
+    opacity: 0.5,
   },
   catIconBox: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginBottom: 10,
   },
   catLabel: {
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    flex: 1,
-  },
-  catAccentLine: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    borderRadius: 2,
-    opacity: 0.5,
+    fontFamily: "SpaceGrotesk_700Bold",
+    fontSize: 12,
+    color: "#FFFFFF",
+    textAlign: "center",
   },
 
   // Featured events

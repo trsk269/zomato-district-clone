@@ -32,7 +32,14 @@ const POPULAR = [
 ];
 
 const ALL_CITIES = [
-  "Abohar", "Abu Road", "Achalpur", "Adampur", "Adra", "Agartala", "Agra", "Ahmedabad"
+  "Abohar",
+  "Abu Road",
+  "Achalpur",
+  "Adampur",
+  "Adra",
+  "Agartala",
+  "Agra",
+  "Ahmedabad",
 ];
 
 export default function LocationScreen() {
@@ -47,15 +54,18 @@ export default function LocationScreen() {
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerLeft}>
           <ChevronDown color={textColor} size={24} />
-          <Text style={[styles.headerTitle, { color: textColor }]}>Location</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>
+            Location
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
         {/* 🔍 Search */}
-        <View
-          style={[styles.searchBox, { backgroundColor: cardColor }]}
-        >
+        <View style={[styles.searchBox, { backgroundColor: cardColor }]}>
           <Search size={20} color={textColor} opacity={0.6} />
           <TextInput
             placeholder="Search city, area or locality"
@@ -73,12 +83,19 @@ export default function LocationScreen() {
             style={styles.locationCard}
           >
             <View style={styles.locationIconContainer}>
-               <MapPin color="#D8B4FE" size={24} strokeWidth={1.5} />
+              <MapPin color="#D8B4FE" size={24} strokeWidth={1.5} />
             </View>
 
             <View style={{ flex: 1, backgroundColor: "transparent" }}>
-              <View style={[styles.locationTitleRow, { backgroundColor: "transparent" }]}>
-                <Text style={styles.locationTitle}>Enable location permissions</Text>
+              <View
+                style={[
+                  styles.locationTitleRow,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
+                <Text style={styles.locationTitle}>
+                  Enable location permissions
+                </Text>
                 <ArrowRight color="#FFF" size={16} style={{ marginLeft: 6 }} />
               </View>
               <Text style={styles.locationSubtitle}>
@@ -90,7 +107,9 @@ export default function LocationScreen() {
 
         {/* 🕘 Recent searches */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Recent searches</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Recent searches
+          </Text>
           <View style={styles.chipRow}>
             {RECENT.map((city) => (
               <TouchableOpacity
@@ -107,7 +126,9 @@ export default function LocationScreen() {
 
         {/* 🌆 Popular cities */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Popular cities</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Popular cities
+          </Text>
           <View style={styles.grid}>
             {POPULAR.map((item, index) => {
               const Icon = item.icon || Building2;
@@ -116,8 +137,16 @@ export default function LocationScreen() {
                   key={index}
                   style={[styles.cityCard, { backgroundColor: cardColor }]}
                 >
-                  <Icon size={32} color={tintColor} strokeWidth={1} style={styles.cityIcon} />
-                  <Text style={[styles.cityText, { color: textColor }]} numberOfLines={1}>
+                  <Icon
+                    size={32}
+                    color={tintColor}
+                    strokeWidth={1}
+                    style={styles.cityIcon}
+                  />
+                  <Text
+                    style={[styles.cityText, { color: textColor }]}
+                    numberOfLines={1}
+                  >
                     {item.name}
                   </Text>
                 </TouchableOpacity>
@@ -128,10 +157,14 @@ export default function LocationScreen() {
 
         {/* 🏙️ All cities */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>All cities</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            All cities
+          </Text>
           {ALL_CITIES.map((city, index) => (
             <TouchableOpacity key={index} style={styles.allCityItem}>
-              <Text style={[styles.allCityText, { color: textColor }]}>{city}</Text>
+              <Text style={[styles.allCityText, { color: textColor }]}>
+                {city}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
