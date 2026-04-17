@@ -28,7 +28,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const HERO_HEIGHT = SCREEN_HEIGHT * 0.52;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface EventDetailScreenProps {
+interface EventScreenProps {
   navigation?: any;
   route?: any;
 }
@@ -84,9 +84,7 @@ const HighlightCard = ({
 );
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-export default function EventDetailScreen({
-  navigation,
-}: EventDetailScreenProps) {
+export default function EventScreen({ navigation }: EventScreenProps) {
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
 

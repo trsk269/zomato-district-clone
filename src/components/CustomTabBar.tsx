@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Home, BarChart3, Plus, Clock3, User } from "lucide-react-native";
+import { Home, Search, User } from "lucide-react-native";
 import { useThemeColor } from "./Themed";
 
 export function CustomTabBar({
@@ -18,11 +18,14 @@ export function CustomTabBar({
 
   const icons: Record<string, any> = {
     index: Home,
-    chart: BarChart3,
-    add: Plus,
-    history: Clock3,
+    search: Search,
     profile: User,
   };
+
+  // Only show these tabs
+  const visibleRoutes = state.routes.filter((route) =>
+    ["index", "search", "profile"].includes(route.name),
+  );
 
   return (
     <View
@@ -35,9 +38,10 @@ export function CustomTabBar({
         },
       ]}
     >
-      {state.routes.map((route, index) => {
+      {visibleRoutes.map((route) => {
         const { options } = descriptors[route.key];
-        const isFocused = state.index === index;
+        const routeIndex = state.routes.findIndex((r) => r.key === route.key);
+        const isFocused = state.index === routeIndex;
         const Icon = icons[route.name] || Home;
 
         const onPress = () => {
@@ -51,21 +55,6 @@ export function CustomTabBar({
             navigation.navigate(route.name);
           }
         };
-
-        if (route.name === "add") {
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={onPress}
-              style={styles.addButtonWrapper}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.addButton, { backgroundColor: tintColor }]}>
-                <Plus color="#FFFFFF" size={32} />
-              </View>
-            </TouchableOpacity>
-          );
-        }
 
         return (
           <TouchableOpacity
@@ -98,24 +87,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  addButtonWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -40, // Raise the button
-  },
-  addButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#A855F7",
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 8,
-    shadowColor: "#A855F7",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
   },
 });

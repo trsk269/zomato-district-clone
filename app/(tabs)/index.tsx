@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { useRouter } from "expo-router";
 import {
   StyleSheet,
   ScrollView,
@@ -111,11 +112,13 @@ const FEATURED_EVENTS = [
 
 // --- Sub-components ---
 function CategoryCard({ item }: { item: (typeof CATEGORIES)[0] }) {
+  const router = useRouter();
   const { Icon, color, bg, border, label } = item;
   return (
     <TouchableOpacity
       style={[styles.catCard, { backgroundColor: bg, borderColor: border }]}
       activeOpacity={0.72}
+      onPress={() => router.push("/event")}
     >
       <DefaultView
         style={[styles.catGlow, { backgroundColor: color + "25" }]}
@@ -132,8 +135,13 @@ function CategoryCard({ item }: { item: (typeof CATEGORIES)[0] }) {
 }
 
 function FeaturedCard({ item }: { item: (typeof FEATURED_EVENTS)[0] }) {
+  const router = useRouter();
   return (
-    <TouchableOpacity style={styles.featuredCard} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={styles.featuredCard}
+      activeOpacity={0.85}
+      onPress={() => router.push("/event")}
+    >
       <DefaultView
         style={[styles.featuredInner, { backgroundColor: item.gradient[0] }]}
       >
@@ -190,6 +198,7 @@ function FeaturedCard({ item }: { item: (typeof FEATURED_EVENTS)[0] }) {
 
 // --- Main Screen ---
 export default function HomeScreen() {
+  const router = useRouter();
   const textColor = useThemeColor({}, "text");
 
   return (
@@ -202,7 +211,11 @@ export default function HomeScreen() {
         {/* ── TOP BAR ── */}
         <DefaultView style={styles.topBar}>
           {/* Location */}
-          <TouchableOpacity style={styles.locationRow} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.locationRow}
+            activeOpacity={0.7}
+            onPress={() => router.push("/location")}
+          >
             <MapPin size={16} color="#A855F7" />
             <DefaultView style={{ marginLeft: 6 }}>
               <DefaultView style={styles.locationInner}>
@@ -229,7 +242,11 @@ export default function HomeScreen() {
         </DefaultView>
 
         {/* ── SEARCH BAR ── */}
-        <TouchableOpacity style={styles.searchBar} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.searchBar}
+          activeOpacity={0.8}
+          onPress={() => router.push("/search")}
+        >
           <Search size={18} color="rgba(255,255,255,0.35)" />
           <Text style={styles.searchPlaceholder}>
             Search for events, movies…
@@ -237,7 +254,11 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {/* ── HERO BANNER ── */}
-        <DefaultView style={styles.heroBanner}>
+        <TouchableOpacity
+          style={styles.heroBanner}
+          activeOpacity={0.9}
+          onPress={() => router.push("/event")}
+        >
           <DefaultView style={styles.heroGradientBg}>
             <DefaultView style={styles.heroGlow} />
             <Text style={styles.heroEyebrow}>Limited Time Offer</Text>
@@ -297,12 +318,12 @@ export default function HomeScreen() {
               </Text>
               <Text style={styles.gpayText}> Pay</Text>
             </DefaultView>
-            <TouchableOpacity style={styles.heroBtn} activeOpacity={0.85}>
+            <DefaultView style={styles.heroBtn}>
               <Text style={styles.heroBtnText}>Explore now</Text>
               <ChevronRight size={15} color="#09090B" />
-            </TouchableOpacity>
+            </DefaultView>
           </DefaultView>
-        </DefaultView>
+        </TouchableOpacity>
 
         {/* ── CATEGORIES ── */}
         <DefaultView style={styles.sectionHeader}>
@@ -318,7 +339,7 @@ export default function HomeScreen() {
         {/* ── FEATURED EVENTS ── */}
         <DefaultView style={[styles.sectionHeader, { marginTop: 28 }]}>
           <Text style={styles.sectionTitle}>Featured Events</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/event")}>
             <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </DefaultView>
