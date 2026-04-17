@@ -50,7 +50,7 @@ The project follows a clean, modular architecture:
 1. Navigate to the project directory:
 
    ```bash
-   cd ExpenseTracker
+   cd zomato-district-clone
    ```
 
 2. Install dependencies:

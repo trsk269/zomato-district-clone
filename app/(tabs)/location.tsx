@@ -4,14 +4,19 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import { View, Text, useThemeColor } from "@/components/Themed";
 import {
   MapPin,
   Search,
-  ChevronRight,
+  ChevronDown,
   Building2,
   Landmark,
+  ArrowRight,
+  Castle,
+  School,
+  Building,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -20,10 +25,14 @@ const RECENT = ["Chennai", "Hyderabad"];
 const POPULAR = [
   { name: "Delhi NCR", icon: Landmark },
   { name: "Mumbai", icon: Building2 },
-  { name: "Kolkata", icon: Landmark },
-  { name: "Bengaluru", icon: Building2 },
+  { name: "Kolkata", icon: Castle },
+  { name: "Bengaluru", icon: Building },
   { name: "Hyderabad", icon: Landmark },
-  { name: "Chandigarh", icon: Building2 },
+  { name: "Chandigarh", icon: School },
+];
+
+const ALL_CITIES = [
+  "Abohar", "Abu Road", "Achalpur", "Adampur", "Adra", "Agartala", "Agra", "Ahmedabad"
 ];
 
 export default function LocationScreen() {
@@ -31,96 +40,127 @@ export default function LocationScreen() {
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const tintColor = useThemeColor({}, "tint");
+  const backgroundColor = useThemeColor({}, "background");
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* 🔍 Search */}
-      <View
-        style={[styles.searchBox, { backgroundColor: cardColor, borderColor }]}
-      >
-        <Search size={18} color={textColor} opacity={0.4} />
-        <TextInput
-          placeholder="Search city, area or locality"
-          placeholderTextColor="rgba(255,255,255,0.3)"
-          style={[styles.searchInput, { color: textColor }]}
-        />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerLeft}>
+          <ChevronDown color={textColor} size={24} />
+          <Text style={[styles.headerTitle, { color: textColor }]}>Location</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* 📍 Enable Location */}
-      <TouchableOpacity activeOpacity={0.85}>
-        <LinearGradient
-          colors={["#FF4D6D", "#FF7A18"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.locationCard}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+        {/* 🔍 Search */}
+        <View
+          style={[styles.searchBox, { backgroundColor: cardColor }]}
         >
-          <View style={styles.locationIcon}>
-            <MapPin color="#FFF" size={20} />
-          </View>
+          <Search size={20} color={textColor} opacity={0.6} />
+          <TextInput
+            placeholder="Search city, area or locality"
+            placeholderTextColor="rgba(255,255,255,0.4)"
+            style={[styles.searchInput, { color: textColor }]}
+          />
+        </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.locationTitle}>
-              Enable location permissions
-            </Text>
-            <Text style={styles.locationSubtitle}>
-              for better recommendations near you
-            </Text>
-          </View>
+        {/* 📍 Enable Location Card */}
+        <TouchableOpacity activeOpacity={0.9}>
+          <LinearGradient
+            colors={["#310E3A", "#1A0B2E"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.locationCard}
+          >
+            <View style={styles.locationIconContainer}>
+               <MapPin color="#D8B4FE" size={24} strokeWidth={1.5} />
+            </View>
 
-          <ChevronRight color="#FFF" opacity={0.8} />
-        </LinearGradient>
-      </TouchableOpacity>
-
-      {/* 🕘 Recent */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent searches</Text>
-
-        <View style={styles.chipRow}>
-          {RECENT.map((city) => (
-            <TouchableOpacity
-              key={city}
-              style={[styles.chip, { backgroundColor: cardColor }]}
-            >
-              <Text style={[styles.chipText, { color: textColor }]}>
-                {city}
+            <View style={{ flex: 1, backgroundColor: "transparent" }}>
+              <View style={[styles.locationTitleRow, { backgroundColor: "transparent" }]}>
+                <Text style={styles.locationTitle}>Enable location permissions</Text>
+                <ArrowRight color="#FFF" size={16} style={{ marginLeft: 6 }} />
+              </View>
+              <Text style={styles.locationSubtitle}>
+                for more relevant suggestions near you
               </Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* 🕘 Recent searches */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Recent searches</Text>
+          <View style={styles.chipRow}>
+            {RECENT.map((city) => (
+              <TouchableOpacity
+                key={city}
+                style={[styles.chip, { backgroundColor: cardColor }]}
+              >
+                <Text style={[styles.chipText, { color: textColor }]}>
+                  {city}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* 🌆 Popular cities */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Popular cities</Text>
+          <View style={styles.grid}>
+            {POPULAR.map((item, index) => {
+              const Icon = item.icon || Building2;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.cityCard, { backgroundColor: cardColor }]}
+                >
+                  <Icon size={32} color={tintColor} strokeWidth={1} style={styles.cityIcon} />
+                  <Text style={[styles.cityText, { color: textColor }]} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 🏙️ All cities */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>All cities</Text>
+          {ALL_CITIES.map((city, index) => (
+            <TouchableOpacity key={index} style={styles.allCityItem}>
+              <Text style={[styles.allCityText, { color: textColor }]}>{city}</Text>
             </TouchableOpacity>
           ))}
         </View>
-      </View>
-
-      {/* 🌆 Popular */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Popular cities</Text>
-
-        <View style={styles.grid}>
-          {POPULAR.map((item, index) => {
-            const Icon = item.icon;
-
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[styles.cityCard, { backgroundColor: cardColor }]}
-              >
-                <View style={styles.cityIcon}>
-                  <Icon size={22} color={tintColor} />
-                </View>
-
-                <Text style={[styles.cityText, { color: textColor }]}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontFamily: "SpaceGrotesk_700Bold",
+    marginLeft: 12,
+  },
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
     paddingBottom: 40,
   },
 
@@ -128,73 +168,74 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    height: 52,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
     marginBottom: 20,
   },
   searchInput: {
-    marginLeft: 10,
-    fontSize: 15,
+    marginLeft: 12,
+    fontSize: 16,
     flex: 1,
     fontFamily: "SpaceGrotesk_500Medium",
   },
 
   /* Location Card */
   locationCard: {
-    borderRadius: 22,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 25,
+    borderRadius: 16,
+    padding: 20,
+    paddingVertical: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    marginBottom: 30,
   },
-  locationIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.2)",
+  locationIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(216, 180, 254, 0.1)",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 14,
+    marginBottom: 16,
+  },
+  locationTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   locationTitle: {
     color: "#FFF",
-    fontSize: 15,
+    fontSize: 17,
     fontFamily: "SpaceGrotesk_700Bold",
   },
   locationSubtitle: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 12,
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 14,
     marginTop: 4,
     fontFamily: "SpaceGrotesk_500Medium",
   },
 
   /* Section */
   section: {
-    marginBottom: 25,
+    marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 13,
-    opacity: 0.5,
-    marginBottom: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
+    fontSize: 18,
     fontFamily: "SpaceGrotesk_700Bold",
+    marginBottom: 16,
   },
 
   /* Chips */
   chipRow: {
     flexDirection: "row",
-    gap: 10,
+    gap: 12,
   },
   chip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 25,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_600SemiBold",
   },
 
@@ -202,20 +243,33 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: 10,
   },
   cityCard: {
-    width: "48%",
-    borderRadius: 18,
-    paddingVertical: 18,
+    width: "31%",
+    aspectRatio: 1,
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 12,
+    justifyContent: "center",
+    padding: 8,
   },
   cityIcon: {
-    marginBottom: 8,
+    marginBottom: 10,
+    opacity: 0.8,
   },
   cityText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "SpaceGrotesk_600SemiBold",
+    textAlign: "center",
+  },
+
+  /* All Cities */
+  allCityItem: {
+    paddingVertical: 12,
+  },
+  allCityText: {
+    fontSize: 16,
+    opacity: 0.8,
+    fontFamily: "SpaceGrotesk_500Medium",
   },
 });
