@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ExpenseTracker",
-    "slug": "ExpenseTracker",
+    "name": "Zomato District",
+    "slug": "zomato-district",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expense-tracker",
+    "scheme": "zomato-district",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.trsk.expensetracker"
+      "bundleIdentifier": "com.trsk.zomatodistrict"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.trsk.expensetracker"
+      "package": "com.trsk.zomatodistrict"
     },
     "web": {
       "bundler": "metro",

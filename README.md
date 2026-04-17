@@ -1,10 +1,11 @@
-# Expense Tracker
+# Zomato District clone
 
-A modern, structured mobile application built with **Expo**, **React Native**, and **TypeScript**.
+A modern, high-fidelity mobile application clone of Zomato District, built with **Expo**, **React Native**, and **TypeScript**.
 
 ## 🚀 Overview
 
-This project is an Expense Tracker application designed with a focus on scalability and modern development workflows. It uses **Expo Managed Workflow** with **Continuous Native Generation (CNG)** and **EAS** for seamless builds and deployments.
+This project is a high-performance clone of the Zomato District app, focusing on premium UI/UX, smooth navigation, and a modern development workflow.
+It uses **Expo Managed Workflow** with **Continuous Native Generation (CNG)** and **EAS** for seamless builds and deployments.
 
 ## 🛠 Tech Stack
 

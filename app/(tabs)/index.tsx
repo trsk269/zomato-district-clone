@@ -235,7 +235,10 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.topIconBtn}>
               <Bookmark size={19} color={textColor} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.topIconBtn, { marginLeft: 8 }]}>
+            <TouchableOpacity
+              style={[styles.topIconBtn, { marginLeft: 8 }]}
+              onPress={() => router.push("/profile")}
+            >
               <User size={19} color={textColor} />
             </TouchableOpacity>
           </DefaultView>
