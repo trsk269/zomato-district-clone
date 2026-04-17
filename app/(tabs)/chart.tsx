@@ -1,510 +1,401 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   View as DefaultView,
   Dimensions,
+  TextInput,
+  FlatList,
 } from "react-native";
 import { ScreenContainer } from "@/components/ScreenContainer";
-import { View, Text, useThemeColor } from "@/components/Themed";
+import { Text, useThemeColor } from "@/components/Themed";
 import {
   ChevronLeft,
   Search,
-  Bell,
-  Home,
-  BookOpen,
-  Truck,
+  X,
+  Clock,
+  TrendingUp,
+  MapPin,
+  Utensils,
+  Clapperboard,
+  Mic2,
+  Trophy,
   ShoppingBag,
+  Gamepad2,
+  Star,
+  ChevronRight,
 } from "lucide-react-native";
-import Svg, { Circle, G, Path, Polyline } from "react-native-svg";
 
 const { width } = Dimensions.get("window");
-const DONUT_SIZE = width * 0.7;
-const DONUT_RADIUS = DONUT_SIZE / 2;
-const STROKE_WIDTH = 12;
-const CIRCUMFERENCE = 2 * Math.PI * (DONUT_RADIUS - STROKE_WIDTH);
 
-export default function ChartScreen() {
-  const [activeTab, setActiveTab] = useState<"Categories" | "Monthly">(
-    "Categories",
+// ─── Constants ────────────────────────────────────────────────
+const ACCENT = "#A855F7";
+
+const FILTER_TABS = [
+  { id: "all", label: "All", Icon: null },
+  { id: "dining", label: "Dining", Icon: Utensils },
+  { id: "movies", label: "Movies", Icon: Clapperboard },
+  { id: "events", label: "Events", Icon: Mic2 },
+  { id: "ipl", label: "IPL", Icon: Trophy },
+  { id: "stores", label: "Stores", Icon: ShoppingBag },
+  { id: "activities", label: "Activities", Icon: Gamepad2 },
+];
+
+const RECENT_SEARCHES = [
+  "TATA IPL 2026: Match 27 | Sunrisers Hyderabad vs...",
+  "Sunburn Arena ft. Martin Garrix",
+];
+
+const TRENDING = [
+  {
+    id: "t1",
+    title: "LIK: Love Insurance Kompany",
+    sub: "Movie • Tamil",
+    bg: "#1a1a2e",
+    textColor: "#fff",
+    hasImage: true,
+  },
+  {
+    id: "t2",
+    title: "Shaan Live",
+    sub: "Explore Chennai",
+    bg: "#2a1a0e",
+    textColor: "#fff",
+    hasImage: true,
+  },
+  {
+    id: "t3",
+    title: "TATA IPL 2026: Match 48 | Del...",
+    sub: "Event • Sports",
+    bg: "#0a1f3a",
+    textColor: "#fff",
+    hasImage: true,
+  },
+  {
+    id: "t4",
+    title: "Make Your Own Perfume",
+    sub: "Store • 10 items",
+    bg: "#1a1a1a",
+    textColor: "#fff",
+    hasImage: true,
+  },
+  {
+    id: "t5",
+    title: "Dining Carnival",
+    sub: "Get up to 50% OFF",
+    bg: "#1f0a2a",
+    textColor: "#fff",
+    hasImage: true,
+  },
+  {
+    id: "t6",
+    title: "Heartful Leaders Foundation",
+    sub: "Activity • HALF",
+    bg: "#2a1f0a",
+    textColor: "#fff",
+    hasImage: true,
+  },
+];
+
+const HOTSPOTS = [
+  {
+    id: "h1",
+    name: "Trident, GST Road",
+    sub: "Hotel • 8.2 km",
+    rating: "4.5",
+    bg: "#1a2a1a",
+  },
+  {
+    id: "h2",
+    name: "Radisson Blu Hotel & Suites G...",
+    sub: "Hotel • 10.4 km",
+    rating: "4.7",
+    bg: "#1a1a2a",
+  },
+  {
+    id: "h3",
+    name: "Phoenix Market City",
+    sub: "Mall • 10.6 km",
+    rating: "4.6",
+    bg: "#2a1a1a",
+  },
+];
+
+// ─── Result row (after typing) ────────────────────────────────
+function ResultRow({
+  title,
+  sub,
+  offer,
+  bg,
+}: {
+  title: string;
+  sub: string;
+  offer?: string;
+  bg: string;
+}) {
+  return (
+    <TouchableOpacity style={styles.resultRow} activeOpacity={0.7}>
+      <DefaultView style={[styles.resultThumb, { backgroundColor: bg }]} />
+      <DefaultView style={styles.resultInfo}>
+        <Text style={styles.resultTitle}>{title}</Text>
+        <Text style={styles.resultSub}>{sub}</Text>
+        {offer ? <Text style={styles.resultOffer}>{offer}</Text> : null}
+      </DefaultView>
+      <ChevronRight size={16} color="rgba(255,255,255,0.2)" />
+    </TouchableOpacity>
   );
+}
 
-  const cardColor = useThemeColor({}, "card");
-  const borderColor = useThemeColor({}, "border");
-  const textColor = useThemeColor({}, "text");
-
-  // Bot Binder Theme Colors for Categories
-  const colors = {
-    rent: "#3B82F6", // Blue
-    education: "#F43F5E", // Pink
-    transport: "#F59E0B", // Orange
-    shop: "#EAB308", // Yellow
-    neonPurple: "#A855F7",
-    neonGreen: "#10B981",
-  };
-
-  const renderHeader = () => (
-    <View
-      style={styles.headerContainer}
-      lightColor="transparent"
-      darkColor="transparent"
+// ─── Trending card ────────────────────────────────────────────
+function TrendingCard({ item }: { item: (typeof TRENDING)[0] }) {
+  return (
+    <TouchableOpacity
+      style={[styles.trendCard, { backgroundColor: item.bg }]}
+      activeOpacity={0.75}
     >
-      <TouchableOpacity style={styles.iconButton}>
-        <ChevronLeft color={textColor} size={24} />
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>Statistics</Text>
-      <DefaultView style={styles.headerRight}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Search color={textColor} size={22} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.iconButton, { marginLeft: 12 }]}>
-          <Bell color={textColor} size={22} />
-          <DefaultView style={styles.notificationDot} />
-        </TouchableOpacity>
+      <DefaultView style={styles.trendThumb} />
+      <DefaultView style={styles.trendInfo}>
+        <Text style={styles.trendTitle} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Text style={styles.trendSub}>{item.sub}</Text>
       </DefaultView>
-    </View>
+    </TouchableOpacity>
   );
+}
 
-  const renderToggle = () => (
-    <DefaultView
-      style={[
-        styles.toggleContainer,
-        { backgroundColor: cardColor, borderColor },
-      ]}
-    >
-      <TouchableOpacity
-        style={[
-          styles.toggleButton,
-          activeTab === "Categories" && {
-            backgroundColor: "rgba(150, 150, 150, 0.1)",
-          },
-        ]}
-        onPress={() => setActiveTab("Categories")}
-      >
-        <Text
-          style={[
-            styles.toggleText,
-            activeTab === "Categories" ? styles.activeToggleText : {},
-          ]}
-        >
-          Categories
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.toggleButton,
-          activeTab === "Monthly" && {
-            backgroundColor: "rgba(150, 150, 150, 0.1)",
-          },
-        ]}
-        onPress={() => setActiveTab("Monthly")}
-      >
-        <Text
-          style={[
-            styles.toggleText,
-            activeTab === "Monthly" ? styles.activeToggleText : {},
-          ]}
-        >
-          Monthly Spending
-        </Text>
-      </TouchableOpacity>
-    </DefaultView>
+// ─── Hotspot card ─────────────────────────────────────────────
+function HotspotCard({ item }: { item: (typeof HOTSPOTS)[0] }) {
+  return (
+    <TouchableOpacity style={styles.hotspotCard} activeOpacity={0.8}>
+      <DefaultView style={[styles.hotspotThumb, { backgroundColor: item.bg }]}>
+        <DefaultView style={styles.hotspotRating}>
+          <Star size={10} color="#F9A825" fill="#F9A825" />
+          <Text style={styles.hotspotRatingText}>{item.rating}</Text>
+        </DefaultView>
+      </DefaultView>
+      <Text style={styles.hotspotName} numberOfLines={2}>
+        {item.name}
+      </Text>
+      <DefaultView style={styles.hotspotSubRow}>
+        <MapPin size={11} color="rgba(255,255,255,0.4)" />
+        <Text style={styles.hotspotSub}>{item.sub}</Text>
+      </DefaultView>
+    </TouchableOpacity>
   );
+}
 
-  const renderDonutChart = () => {
-    // Proportions approx: Rent 36%, Ed 26%, Trans 22%, Shop 16%
-    const p1 = 0.36;
-    const p2 = 0.26;
-    const p3 = 0.22;
-    const p4 = 0.16;
+// ─── Main Screen ──────────────────────────────────────────────
+export default function SearchScreen() {
+  const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const inputRef = useRef<TextInput>(null);
 
-    return (
-      <DefaultView style={styles.donutContainer}>
-        <Svg
-          width={DONUT_SIZE}
-          height={DONUT_SIZE}
-          viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
-        >
-          <G rotation="-90" origin={`${DONUT_RADIUS}, ${DONUT_RADIUS}`}>
-            {/* Rent Base */}
-            <Circle
-              cx={DONUT_RADIUS}
-              cy={DONUT_RADIUS}
-              r={DONUT_RADIUS - STROKE_WIDTH}
-              stroke={colors.rent}
-              strokeWidth={STROKE_WIDTH}
-              fill="transparent"
-              strokeDasharray={`${CIRCUMFERENCE * p1} ${CIRCUMFERENCE}`}
-              strokeDashoffset={0}
-              strokeLinecap="round"
-            />
+  const hasQuery = query.trim().length > 0;
 
-            {/* Education */}
-            <Circle
-              cx={DONUT_RADIUS}
-              cy={DONUT_RADIUS}
-              r={DONUT_RADIUS - STROKE_WIDTH}
-              stroke={colors.education}
-              strokeWidth={STROKE_WIDTH}
-              fill="transparent"
-              strokeDasharray={`${CIRCUMFERENCE * p2} ${CIRCUMFERENCE}`}
-              strokeDashoffset={-(CIRCUMFERENCE * p1)}
-              strokeLinecap="round"
-            />
-
-            {/* Transport */}
-            <Circle
-              cx={DONUT_RADIUS}
-              cy={DONUT_RADIUS}
-              r={DONUT_RADIUS - STROKE_WIDTH}
-              stroke={colors.transport}
-              strokeWidth={STROKE_WIDTH}
-              fill="transparent"
-              strokeDasharray={`${CIRCUMFERENCE * p3} ${CIRCUMFERENCE}`}
-              strokeDashoffset={-(CIRCUMFERENCE * (p1 + p2))}
-              strokeLinecap="round"
-            />
-
-            {/* Shop */}
-            <Circle
-              cx={DONUT_RADIUS}
-              cy={DONUT_RADIUS}
-              r={DONUT_RADIUS - STROKE_WIDTH}
-              stroke={colors.shop}
-              strokeWidth={STROKE_WIDTH}
-              fill="transparent"
-              strokeDasharray={`${CIRCUMFERENCE * p4} ${CIRCUMFERENCE}`}
-              strokeDashoffset={-(CIRCUMFERENCE * (p1 + p2 + p3))}
-              strokeLinecap="round"
-            />
-          </G>
-        </Svg>
-
-        <DefaultView style={styles.donutCenterContent}>
-          <DefaultView
-            style={[
-              styles.miniIconWrapper,
-              { backgroundColor: `${colors.shop}20` },
-            ]}
-          >
-            <ShoppingBag color={colors.shop} size={20} />
-          </DefaultView>
-          <Text style={styles.donutTotal}>$1560.00</Text>
-          <Text style={styles.donutDate}>August 2025</Text>
-        </DefaultView>
-      </DefaultView>
-    );
-  };
-
-  const renderCategoryCards = () => {
-    const cards = [
-      {
-        id: 1,
-        title: "Rent",
-        tx: 65,
-        amount: "-$562.00",
-        pct: "+2.00%",
-        pctVal: "36%",
-        Icon: Home,
-        color: colors.rent,
-      },
-      {
-        id: 2,
-        title: "Education",
-        tx: 14,
-        amount: "-$406.00",
-        pct: "0.85%",
-        pctVal: "26%",
-        Icon: BookOpen,
-        color: colors.education,
-        green: true,
-      },
-      {
-        id: 3,
-        title: "Transport",
-        tx: 11,
-        amount: "-$343.00",
-        pct: "1.60%",
-        pctVal: "22%",
-        Icon: Truck,
-        color: colors.transport,
-      },
-      {
-        id: 4,
-        title: "Shop",
-        tx: 17,
-        amount: "-$250.00",
-        pct: "0.65%",
-        pctVal: "16%",
-        Icon: ShoppingBag,
-        color: colors.shop,
-        green: true,
-      },
-    ];
-
-    return (
-      <DefaultView style={styles.cardsGrid}>
-        {cards.map((c) => (
-          <DefaultView
-            key={c.id}
-            style={[
-              styles.cardItem,
-              { backgroundColor: cardColor, borderColor },
-            ]}
-          >
-            <DefaultView style={styles.cardHeader}>
-              <DefaultView
-                style={[
-                  styles.cardIconWrapper,
-                  { backgroundColor: `${c.color}20` },
-                ]}
-              >
-                <c.Icon color={c.color} size={18} />
-              </DefaultView>
-              <DefaultView style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.cardTitle}>{c.title}</Text>
-                <Text style={styles.cardTx}>{c.tx} Transactions</Text>
-              </DefaultView>
-            </DefaultView>
-
-            <DefaultView style={styles.cardFooterRow}>
-              <DefaultView>
-                <Text style={styles.cardAmount}>{c.amount}</Text>
-                <Text
-                  style={[
-                    styles.cardPct,
-                    { color: c.green ? colors.neonGreen : colors.education },
-                  ]}
-                >
-                  {c.green ? "↗" : "↙"} {c.pct}
-                </Text>
-              </DefaultView>
-
-              <DefaultView style={styles.miniRingWrapper}>
-                <Svg width={40} height={40} viewBox="0 0 40 40">
-                  <Circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke="rgba(150,150,150,0.2)"
-                    strokeWidth="4"
-                    fill="transparent"
-                  />
-                  <Circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    stroke={c.color}
-                    strokeWidth="4"
-                    fill="transparent"
-                    strokeDasharray="100"
-                    strokeDashoffset={100 - parseInt(c.pctVal)}
-                    strokeLinecap="round"
-                    rotation="-90"
-                    origin="20, 20"
-                  />
-                </Svg>
-                <Text style={styles.miniRingText}>{c.pctVal}</Text>
-              </DefaultView>
-            </DefaultView>
-          </DefaultView>
-        ))}
-      </DefaultView>
-    );
-  };
-
-  const renderLineChart = () => {
-    // Purely demonstrational mock SVG path for the line graph
-    return (
-      <DefaultView
-        style={[
-          styles.lineChartBase,
-          { backgroundColor: cardColor, borderColor },
-        ]}
-      >
-        <Text style={styles.monthlyLabel}>Avg. monthly expenses</Text>
-        <Text style={styles.monthlyAmount}>$1560.00</Text>
-        <Text style={styles.monthlyTrend}>
-          <Text style={{ color: colors.neonGreen }}>↗ $230</Text> than last
-          month
-        </Text>
-
-        <DefaultView style={styles.chartLegend}>
-          <DefaultView style={styles.legendItem}>
-            <DefaultView
-              style={[styles.legendDot, { borderColor: colors.rent }]}
-            />
-            <Text style={styles.legendText}>Income</Text>
-          </DefaultView>
-          <DefaultView style={styles.legendItem}>
-            <DefaultView
-              style={[styles.legendDot, { borderColor: colors.education }]}
-            />
-            <Text style={styles.legendText}>Expense</Text>
-          </DefaultView>
-        </DefaultView>
-
-        <DefaultView style={{ height: 200, width: "100%", marginTop: 20 }}>
-          <Svg height="100%" width="100%" viewBox="0 0 300 200">
-            {/* Grid lines */}
-            {[40, 80, 120, 160].map((y) => (
-              <Path
-                key={y}
-                d={`M 0 ${y} L 300 ${y}`}
-                stroke="rgba(150,150,150,0.1)"
-                strokeWidth="1"
-                strokeDasharray="5,5"
-              />
-            ))}
-
-            {/* Income Line Blue */}
-            <Polyline
-              points="0,150 50,100 100,120 150,100 200,80 250,50 300,30"
-              fill="none"
-              stroke={colors.rent}
-              strokeWidth="3"
-            />
-            <Circle
-              cx="150"
-              cy="100"
-              r="4"
-              fill="#09090B"
-              stroke={colors.rent}
-              strokeWidth="3"
-            />
-
-            {/* Expense Line Pink */}
-            <Polyline
-              points="0,180 50,170 100,160 150,110 200,130 250,70 300,60"
-              fill="none"
-              stroke={colors.education}
-              strokeWidth="3"
-            />
-            <Circle
-              cx="150"
-              cy="110"
-              r="4"
-              fill="#09090B"
-              stroke={colors.education}
-              strokeWidth="3"
-            />
-
-            {/* Vertical crosshair */}
-            <Path
-              d="M 150 0 L 150 200"
-              stroke={colors.rent}
-              strokeWidth="1"
-              opacity={0.5}
-            />
-          </Svg>
-
-          {/* Tooltip mock */}
-          <DefaultView style={styles.mockTooltip}>
-            <Text style={styles.tooltipText}>Income: $4,200</Text>
-            <Text style={styles.tooltipText}>Expenses: $1,560</Text>
-          </DefaultView>
-        </DefaultView>
-
-        <DefaultView style={styles.chartXAxis}>
-          {["Jun", "Jul", "Aug", "Sep", "Oct", "Nov"].map((m, i) => (
-            <Text
-              key={m}
-              style={[styles.axisText, i === 2 && styles.activeAxisText]}
-            >
-              {m}
-            </Text>
-          ))}
-        </DefaultView>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterPills}
-        >
-          {["7D", "1M", "3M", "6M", "1Y", "Customize"].map((f, i) => (
-            <DefaultView
-              key={f}
-              style={[
-                styles.filterPill,
-                i === 3 && { backgroundColor: textColor },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  i === 3 && {
-                    color: "#09090B",
-                    fontFamily: "SpaceGrotesk_700Bold",
-                  },
-                ]}
-              >
-                {f}
-              </Text>
-            </DefaultView>
-          ))}
-        </ScrollView>
-      </DefaultView>
-    );
-  };
-
-  const renderInsights = () => (
-    <DefaultView style={styles.insightsGrid}>
-      <DefaultView
-        style={[
-          styles.insightCard,
-          { backgroundColor: cardColor, borderColor },
-        ]}
-      >
-        <ArrowUpRight
-          color={colors.neonGreen}
-          size={24}
-          style={{ marginBottom: 16 }}
-        />
-        <Text style={styles.insightText}>
-          Your income peaked in August at $4,200
-        </Text>
-      </DefaultView>
-      <DefaultView
-        style={[
-          styles.insightCard,
-          { backgroundColor: cardColor, borderColor },
-        ]}
-      >
-        <DefaultView
-          style={[
-            styles.insightIconWrapper,
-            { backgroundColor: `${colors.shop}20`, marginBottom: 16 },
-          ]}
-        >
-          <ShoppingBag color={colors.shop} size={16} />
-        </DefaultView>
-        <Text style={styles.insightText}>
-          You saved an average of $4,120 per month
-        </Text>
-      </DefaultView>
-    </DefaultView>
-  );
+  const MOCK_RESULTS = [
+    {
+      id: "r1",
+      title: "LIK: Love Insurance Kompany",
+      sub: "Movie • Tamil",
+      offer: undefined,
+      bg: "#1a1a2e",
+    },
+    {
+      id: "r2",
+      title: "Bodycraft Salon",
+      sub: "Store • 16.2 km • Anna Nagar",
+      offer: "💎 Flat 25% OFF • Book appointment",
+      bg: "#1e1e1e",
+    },
+    {
+      id: "r3",
+      title: "Liquid Library by Four Points",
+      sub: "Restaurant • 15 km • Velachery",
+      offer: "💎 Flat 40% OFF + FLAT ₹250 OFF",
+      bg: "#1a1205",
+    },
+    {
+      id: "r4",
+      title: "KAMA AYURVEDA",
+      sub: "Store • 10.6 km • Phoenix City",
+      offer: "💎 10% OFF up to ₹500 + Bank benefits",
+      bg: "#1a0a0a",
+    },
+    {
+      id: "r5",
+      title: "Bombay Likes To Brunch",
+      sub: "Event • Every Sun, 12–5 PM",
+      offer: undefined,
+      bg: "#111111",
+    },
+    {
+      id: "r6",
+      title: "Juicy Chemistry",
+      sub: "Store • 10.4 km • Phoenix City",
+      offer: undefined,
+      bg: "#0a1a0a",
+    },
+  ];
 
   return (
     <ScreenContainer title="" hideTitle>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
       >
-        {renderHeader()}
-        {renderToggle()}
+        {/* ── SEARCH BAR ── */}
+        <DefaultView style={styles.searchRow}>
+          <TouchableOpacity style={styles.backBtn}>
+            <ChevronLeft size={22} color="rgba(255,255,255,0.8)" />
+          </TouchableOpacity>
 
-        {activeTab === "Categories" ? (
+          <DefaultView style={styles.searchInputBox}>
+            <Search size={16} color="rgba(255,255,255,0.3)" />
+            <TextInput
+              ref={inputRef}
+              style={styles.searchInput}
+              placeholder="Search for events, movies…"
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              value={query}
+              onChangeText={setQuery}
+              autoFocus
+              returnKeyType="search"
+            />
+            {hasQuery && (
+              <TouchableOpacity onPress={() => setQuery("")}>
+                <X size={16} color="rgba(255,255,255,0.4)" />
+              </TouchableOpacity>
+            )}
+          </DefaultView>
+        </DefaultView>
+
+        {/* ── FILTER TABS ── */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterContent}
+        >
+          {FILTER_TABS.map((tab) => {
+            const active = activeFilter === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                style={[styles.filterTab, active && styles.filterTabActive]}
+                onPress={() => setActiveFilter(tab.id)}
+                activeOpacity={0.75}
+              >
+                {tab.Icon && (
+                  <tab.Icon
+                    size={13}
+                    color={active ? "#fff" : "rgba(255,255,255,0.5)"}
+                    strokeWidth={2}
+                    style={{ marginRight: 5 }}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.filterTabText,
+                    active && styles.filterTabTextActive,
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+                {active && <DefaultView style={styles.filterActiveUnderline} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* ── DIVIDER ── */}
+        <DefaultView style={styles.divider} />
+
+        {/* ── CONTENT: Before search ── */}
+        {!hasQuery ? (
           <>
-            {renderDonutChart()}
-            {renderCategoryCards()}
+            {/* Recent Searches */}
+            <DefaultView style={styles.section}>
+              <DefaultView style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Recent searches</Text>
+                <TouchableOpacity>
+                  <Text style={styles.clearText}>Clear</Text>
+                </TouchableOpacity>
+              </DefaultView>
+
+              {RECENT_SEARCHES.map((item, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.recentRow}
+                  activeOpacity={0.7}
+                >
+                  <DefaultView style={styles.recentIconBox}>
+                    <Clock size={15} color="rgba(255,255,255,0.4)" />
+                  </DefaultView>
+                  <Text style={styles.recentText} numberOfLines={1}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </DefaultView>
+
+            {/* Trending */}
+            <DefaultView style={styles.section}>
+              <DefaultView style={styles.sectionHeader}>
+                <DefaultView style={styles.sectionTitleRow}>
+                  <TrendingUp
+                    size={16}
+                    color={ACCENT}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.sectionTitle}>Trending in Chennai</Text>
+                </DefaultView>
+              </DefaultView>
+
+              <DefaultView style={styles.trendGrid}>
+                {TRENDING.map((item) => (
+                  <TrendingCard key={item.id} item={item} />
+                ))}
+              </DefaultView>
+            </DefaultView>
+
+            {/* Popular Hotspots */}
+            <DefaultView style={styles.section}>
+              <DefaultView style={styles.sectionHeader}>
+                <DefaultView style={styles.sectionTitleRow}>
+                  <MapPin size={16} color={ACCENT} style={{ marginRight: 6 }} />
+                  <Text style={styles.sectionTitle}>
+                    Popular hotspots near you
+                  </Text>
+                </DefaultView>
+              </DefaultView>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12, paddingRight: 4 }}
+              >
+                {HOTSPOTS.map((item) => (
+                  <HotspotCard key={item.id} item={item} />
+                ))}
+              </ScrollView>
+            </DefaultView>
           </>
         ) : (
-          <>
-            {renderLineChart()}
-            {renderInsights()}
-          </>
+          /* ── CONTENT: After search ── */
+          <DefaultView style={styles.section}>
+            {MOCK_RESULTS.map((item) => (
+              <ResultRow
+                key={item.id}
+                title={item.title}
+                sub={item.sub}
+                offer={item.offer}
+                bg={item.bg}
+              />
+            ))}
+          </DefaultView>
         )}
 
         <DefaultView style={{ height: 100 }} />
@@ -513,265 +404,246 @@ export default function ChartScreen() {
   );
 }
 
-// Ensure lucide icon for mock
-import { ArrowUpRight } from "lucide-react-native";
-
+// ─── Styles ────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 20,
+  scrollContent: { paddingBottom: 20 },
+
+  // Search bar
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 10,
   },
-  headerContainer: {
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchInputBox: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.07)",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: "SpaceGrotesk_400Regular",
+    fontSize: 14,
+    color: "#fff",
+    padding: 0,
+  },
+
+  // Filter tabs
+  filterScroll: { marginBottom: 0 },
+  filterContent: { paddingRight: 16, gap: 6 },
+  filterTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    position: "relative",
+  },
+  filterTabActive: {
+    backgroundColor: "rgba(168,85,247,0.12)",
+  },
+  filterTabText: {
+    fontFamily: "SpaceGrotesk_500Medium",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.45)",
+  },
+  filterTabTextActive: {
+    color: "#fff",
+    fontFamily: "SpaceGrotesk_600SemiBold",
+  },
+  filterActiveUnderline: {
+    position: "absolute",
+    bottom: 0,
+    left: 14,
+    right: 14,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: ACCENT,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginTop: 6,
+    marginBottom: 24,
+  },
+
+  // Section
+  section: { marginBottom: 28 },
+  sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 16,
   },
-  headerTitle: {
+  sectionTitleRow: { flexDirection: "row", alignItems: "center" },
+  sectionTitle: {
     fontFamily: "SpaceGrotesk_700Bold",
-    fontSize: 18,
+    fontSize: 16,
+    color: "#fff",
   },
-  headerRight: {
+  clearText: {
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    fontSize: 13,
+    color: ACCENT,
+    textDecorationLine: "underline",
+  },
+
+  // Recent
+  recentRow: {
     flexDirection: "row",
-  },
-  iconButton: {
-    padding: 8,
-    backgroundColor: "rgba(150, 150, 150, 0.1)",
-    borderRadius: 20,
-    width: 40,
-    height: 40,
     alignItems: "center",
-    justifyContent: "center",
-  },
-  notificationDot: {
-    position: "absolute",
-    top: 6,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#A855F7",
-    borderWidth: 1.5,
-    borderColor: "#09090B",
-  },
-  toggleContainer: {
-    flexDirection: "row",
-    borderRadius: 30,
-    padding: 4,
-    borderWidth: 1,
-    marginBottom: 30,
-  },
-  toggleButton: {
-    flex: 1,
     paddingVertical: 12,
-    borderRadius: 26,
-    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
+    gap: 12,
   },
-  toggleText: {
-    fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  activeToggleText: {
-    fontFamily: "SpaceGrotesk_700Bold",
-    opacity: 1,
-  },
-  donutContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 40,
-    position: "relative",
-  },
-  donutCenterContent: {
-    position: "absolute",
+  recentIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.05)",
     alignItems: "center",
     justifyContent: "center",
   },
-  miniIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  donutTotal: {
-    fontFamily: "SpaceGrotesk_700Bold",
-    fontSize: 28,
-  },
-  donutDate: {
+  recentText: {
+    flex: 1,
     fontFamily: "SpaceGrotesk_400Regular",
-    fontSize: 14,
-    opacity: 0.6,
-    marginTop: 4,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.65)",
   },
-  cardsGrid: {
+
+  // Trending grid — 2 columns
+  trendGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: 10,
   },
-  cardItem: {
-    width: "48%",
-    borderRadius: 24,
-    padding: 16,
-    marginBottom: 16,
+  trendCard: {
+    width: (width - 40 - 10) / 2,
+    borderRadius: 16,
+    overflow: "hidden",
     borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+  trendThumb: {
+    width: "100%",
+    height: 90,
+    backgroundColor: "rgba(255,255,255,0.05)",
   },
-  cardIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+  trendInfo: {
+    padding: 10,
   },
-  cardTitle: {
+  trendTitle: {
     fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 14,
+    fontSize: 13,
+    color: "#fff",
+    marginBottom: 3,
+    lineHeight: 18,
   },
-  cardTx: {
+  trendSub: {
     fontFamily: "SpaceGrotesk_400Regular",
     fontSize: 11,
-    opacity: 0.6,
-    marginTop: 2,
+    color: "rgba(255,255,255,0.4)",
   },
-  cardFooterRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+
+  // Hotspot cards — horizontal scroll
+  hotspotCard: {
+    width: width * 0.46,
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  cardAmount: {
-    fontFamily: "SpaceGrotesk_700Bold",
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  cardPct: {
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 12,
-  },
-  miniRingWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  miniRingText: {
-    position: "absolute",
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 10,
-  },
-  lineChartBase: {
-    padding: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  monthlyLabel: {
-    fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  monthlyAmount: {
-    fontFamily: "SpaceGrotesk_700Bold",
-    fontSize: 32,
-    marginTop: 4,
+  hotspotThumb: {
+    width: "100%",
+    height: 120,
+    borderRadius: 14,
     marginBottom: 8,
+    position: "relative",
+    overflow: "hidden",
   },
-  monthlyTrend: {
-    fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  chartLegend: {
+  hotspotRating: {
     position: "absolute",
-    right: 24,
-    top: 50,
-    flexDirection: "row",
-  },
-  legendItem: {
+    bottom: 8,
+    left: 8,
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 3,
-    marginRight: 6,
-    backgroundColor: "transparent",
-  },
-  legendText: {
-    fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 12,
-  },
-  mockTooltip: {
-    position: "absolute",
-    top: 60,
-    left: 80,
-    backgroundColor: "#FAFAFA",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
     borderRadius: 8,
+    gap: 3,
   },
-  tooltipText: {
-    color: "#09090B",
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  chartXAxis: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-    marginBottom: 24,
-    paddingHorizontal: 10,
-  },
-  axisText: {
-    fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 12,
-    opacity: 0.5,
-  },
-  activeAxisText: {
-    opacity: 1,
+  hotspotRatingText: {
     fontFamily: "SpaceGrotesk_700Bold",
+    fontSize: 11,
+    color: "#F9A825",
   },
-  filterPills: {
-    flexDirection: "row",
-  },
-  filterPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginRight: 8,
-    backgroundColor: "rgba(150, 150, 150, 0.1)",
-  },
-  filterText: {
-    fontFamily: "SpaceGrotesk_500Medium",
+  hotspotName: {
+    fontFamily: "SpaceGrotesk_600SemiBold",
     fontSize: 13,
+    color: "#fff",
+    marginBottom: 4,
+    lineHeight: 18,
   },
-  insightsGrid: {
+  hotspotSubRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  insightCard: {
-    width: "48%",
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  insightIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center",
+    gap: 4,
   },
-  insightText: {
+  hotspotSub: {
+    fontFamily: "SpaceGrotesk_400Regular",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.4)",
+  },
+
+  // Results (after typing)
+  resultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
+    gap: 14,
+  },
+  resultThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  resultInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  resultTitle: {
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    fontSize: 14,
+    color: "#fff",
+  },
+  resultSub: {
+    fontFamily: "SpaceGrotesk_400Regular",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.4)",
+  },
+  resultOffer: {
     fontFamily: "SpaceGrotesk_500Medium",
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 11,
+    color: ACCENT,
+    marginTop: 2,
   },
 });
