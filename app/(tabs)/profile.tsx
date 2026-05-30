@@ -7,10 +7,12 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
-import { ScreenContainer } from "@/components/ScreenContainer";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { View, Text, useThemeColor } from "@/components/Themed";
 import Svg, { Circle } from "react-native-svg";
 import {
+  ChevronLeft,
   ChevronRight,
   ArrowRight,
   Gift,
@@ -200,8 +202,27 @@ const ListRow = ({
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
+  const router = useRouter();
+
   return (
-    <ScreenContainer title="Profile">
+    <SafeAreaView style={styles.root} edges={["top"]}>
+      <DefaultView style={styles.header}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)");
+            }
+          }}
+        >
+          <ChevronLeft size={22} color="rgba(255,255,255,0.8)" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Profile</Text>
+        <DefaultView style={{ width: 38 }} />
+      </DefaultView>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
@@ -283,12 +304,38 @@ export default function ProfileScreen() {
 
         <DefaultView style={{ height: 100 }} />
       </ScrollView>
-    </ScreenContainer>
+    </SafeAreaView>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#09090B",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "rgba(255,255,255,0.06)",
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#FFFFFF",
+  },
   scroll: {
     paddingHorizontal: 16,
     paddingTop: 12,

@@ -7,8 +7,10 @@ import {
   Dimensions,
   TextInput,
   FlatList,
+  Animated,
 } from "react-native";
-import { ScreenContainer } from "@/components/ScreenContainer";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { Text, useThemeColor } from "@/components/Themed";
 import {
   ChevronLeft,
@@ -188,9 +190,48 @@ function HotspotCard({ item }: { item: (typeof HOTSPOTS)[0] }) {
 
 // ─── Main Screen ──────────────────────────────────────────────
 export default function SearchScreen() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const inputRef = useRef<TextInput>(null);
+
+  const focusAnim = useRef(new Animated.Value(0)).current;
+
+  const onFocus = () => {
+    Animated.timing(focusAnim, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const onBlur = () => {
+    Animated.timing(focusAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const animatedBorderColor = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(255,255,255,0.08)", "#A855F7"],
+  });
+
+  const animatedShadowOpacity = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.35],
+  });
+
+  const animatedScale = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.015],
+  });
+
+  const animatedIconOpacity = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.9],
+  });
 
   const hasQuery = query.trim().length > 0;
 
@@ -240,7 +281,7 @@ export default function SearchScreen() {
   ];
 
   return (
-    <ScreenContainer title="" hideTitle>
+    <SafeAreaView style={styles.root} edges={["top"]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -248,12 +289,32 @@ export default function SearchScreen() {
       >
         {/* ── SEARCH BAR ── */}
         <DefaultView style={styles.searchRow}>
-          <TouchableOpacity style={styles.backBtn}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/(tabs)");
+              }
+            }}
+          >
             <ChevronLeft size={22} color="rgba(255,255,255,0.8)" />
           </TouchableOpacity>
 
-          <DefaultView style={styles.searchInputBox}>
-            <Search size={16} color="rgba(255,255,255,0.3)" />
+          <Animated.View
+            style={[
+              styles.searchInputBox,
+              {
+                borderColor: animatedBorderColor,
+                shadowOpacity: animatedShadowOpacity,
+                transform: [{ scale: animatedScale }],
+              },
+            ]}
+          >
+            <Animated.View style={{ opacity: animatedIconOpacity }}>
+              <Search size={16} color="#fff" />
+            </Animated.View>
             <TextInput
               ref={inputRef}
               style={styles.searchInput}
@@ -263,13 +324,16 @@ export default function SearchScreen() {
               onChangeText={setQuery}
               autoFocus
               returnKeyType="search"
+              onFocus={onFocus}
+              onBlur={onBlur}
+              selectionColor="#A855F7"
             />
             {hasQuery && (
               <TouchableOpacity onPress={() => setQuery("")}>
                 <X size={16} color="rgba(255,255,255,0.4)" />
               </TouchableOpacity>
             )}
-          </DefaultView>
+          </Animated.View>
         </DefaultView>
 
         {/* ── FILTER TABS ── */}
@@ -375,7 +439,7 @@ export default function SearchScreen() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 4 }}
+                contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}
               >
                 {HOTSPOTS.map((item) => (
                   <HotspotCard key={item.id} item={item} />
@@ -400,12 +464,16 @@ export default function SearchScreen() {
 
         <DefaultView style={{ height: 100 }} />
       </ScrollView>
-    </ScreenContainer>
+    </SafeAreaView>
   );
 }
 
 // ─── Styles ────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#09090B",
+  },
   scrollContent: { paddingBottom: 20 },
 
   // Search bar
@@ -414,6 +482,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     gap: 10,
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
   backBtn: {
     width: 38,
@@ -431,9 +501,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 11,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.08)",
     gap: 10,
+    shadowColor: "#A855F7",
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 4,
   },
   searchInput: {
     flex: 1,
@@ -441,11 +515,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#fff",
     padding: 0,
+    outlineStyle: "none" as any,
   },
 
   // Filter tabs
   filterScroll: { marginBottom: 0 },
-  filterContent: { paddingRight: 16, gap: 6 },
+  filterContent: { paddingLeft: 20, paddingRight: 20, gap: 6 },
   filterTab: {
     flexDirection: "row",
     alignItems: "center",
@@ -481,6 +556,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.06)",
     marginTop: 6,
     marginBottom: 24,
+    marginHorizontal: 20,
   },
 
   // Section
@@ -490,6 +566,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    paddingHorizontal: 20,
   },
   sectionTitleRow: { flexDirection: "row", alignItems: "center" },
   sectionTitle: {
@@ -512,6 +589,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.04)",
     gap: 12,
+    paddingHorizontal: 20,
   },
   recentIconBox: {
     width: 34,
@@ -533,6 +611,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+    paddingHorizontal: 20,
   },
   trendCard: {
     width: (width - 40 - 10) / 2,
@@ -619,6 +698,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.04)",
     gap: 14,
+    paddingHorizontal: 20,
   },
   resultThumb: {
     width: 56,

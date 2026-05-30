@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Animated,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { View, Text, useThemeColor } from "@/components/Themed";
 import {
   MapPin,
@@ -43,16 +45,64 @@ const ALL_CITIES = [
 ];
 
 export default function LocationScreen() {
+  const router = useRouter();
   const cardColor = useThemeColor({}, "card");
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const tintColor = useThemeColor({}, "tint");
   const backgroundColor = useThemeColor({}, "background");
 
+  const focusAnim = useRef(new Animated.Value(0)).current;
+
+  const onFocus = () => {
+    Animated.timing(focusAnim, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const onBlur = () => {
+    Animated.timing(focusAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const animatedBorderColor = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(255,255,255,0.08)", "#A855F7"],
+  });
+
+  const animatedShadowOpacity = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.35],
+  });
+
+  const animatedScale = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.015],
+  });
+
+  const animatedIconOpacity = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.6, 1],
+  });
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerLeft}>
+        <TouchableOpacity
+          style={styles.headerLeft}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)");
+            }
+          }}
+        >
           <ChevronDown color={textColor} size={24} />
           <Text style={[styles.headerTitle, { color: textColor }]}>
             Location
@@ -65,14 +115,29 @@ export default function LocationScreen() {
         contentContainerStyle={styles.container}
       >
         {/* 🔍 Search */}
-        <View style={[styles.searchBox, { backgroundColor: cardColor }]}>
-          <Search size={20} color={textColor} opacity={0.6} />
+        <Animated.View
+          style={[
+            styles.searchBox,
+            {
+              backgroundColor: cardColor,
+              borderColor: animatedBorderColor,
+              shadowOpacity: animatedShadowOpacity,
+              transform: [{ scale: animatedScale }],
+            },
+          ]}
+        >
+          <Animated.View style={{ opacity: animatedIconOpacity }}>
+            <Search size={20} color={textColor} />
+          </Animated.View>
           <TextInput
             placeholder="Search city, area or locality"
             placeholderTextColor="rgba(255,255,255,0.4)"
             style={[styles.searchInput, { color: textColor }]}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            selectionColor="#A855F7"
           />
-        </View>
+        </Animated.View>
 
         {/* 📍 Enable Location Card */}
         <TouchableOpacity activeOpacity={0.9}>
@@ -205,12 +270,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 56,
     marginBottom: 20,
+    borderWidth: 1.5,
+    shadowColor: "#A855F7",
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 4,
   },
   searchInput: {
     marginLeft: 12,
     fontSize: 16,
     flex: 1,
     fontFamily: "SpaceGrotesk_500Medium",
+    outlineStyle: "none" as any,
   },
 
   /* Location Card */
