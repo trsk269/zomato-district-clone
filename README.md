@@ -1,10 +1,30 @@
-# Zomato District clone
+# Zomato District Clone
 
 A modern, high-fidelity mobile application clone of Zomato District, built with **Expo**, **React Native**, and **TypeScript**.
 
+---
+
+## 📱 App Snapshots
+
+Here is a visual showcase of the high-fidelity user interface and interactive features built for this clone.
+
+|                   🔑 Login Screen                    |                🌆 Home Dashboard                 |
+| :--------------------------------------------------: | :----------------------------------------------: |
+| ![Login Screen](./assets/images/Snapshots/Login.png) | ![Home Page](./assets/images/Snapshots/Home.png) |
+
+|                  🍿 Events Category                  |                  🔍 Search Experience                  |
+| :--------------------------------------------------: | :----------------------------------------------------: |
+| ![Events Page](./assets/images/Snapshots/Events.png) | ![Search Screen](./assets/images/Snapshots/Search.png) |
+
+|                    📍 Location Selector                    |                   👤 Profile Dashboard                   |
+| :--------------------------------------------------------: | :------------------------------------------------------: |
+| ![Location Screen](./assets/images/Snapshots/Location.png) | ![Profile Screen](./assets/images/Snapshots/Profile.png) |
+
+---
+
 ## 🚀 Overview
 
-This project is a high-performance clone of the Zomato District app, focusing on premium UI/UX, smooth navigation, and a modern development workflow.
+This project is a high-performance clone of the Zomato District app, focusing on premium UI/UX, smooth navigation, dynamic micro-scaling interactions, custom animated focus states, and a modern React Native development workflow.
 It uses **Expo Managed Workflow** with **Continuous Native Generation (CNG)** and **EAS** for seamless builds and deployments.
 
 ## 🛠 Tech Stack
@@ -12,7 +32,8 @@ It uses **Expo Managed Workflow** with **Continuous Native Generation (CNG)** an
 - **Framework**: [Expo](https://expo.dev/) (Managed Workflow)
 - **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/) (Link-based routing)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: React Native StyleSheet with Light/Dark mode support
+- **Styling**: React Native StyleSheet with custom dark/light token system
+- **Animations**: Standard optimized React Native `Animated` framework for zero bundle bloat and 60fps performance
 - **Build System**: [EAS (Expo Application Services)](https://expo.dev/eas)
 
 ## 📁 Project Structure

@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   Animated,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { View, Text, useThemeColor } from "@/components/Themed";
@@ -25,12 +26,36 @@ import { LinearGradient } from "expo-linear-gradient";
 const RECENT = ["Chennai", "Hyderabad"];
 
 const POPULAR = [
-  { name: "Delhi NCR", icon: Landmark },
-  { name: "Mumbai", icon: Building2 },
-  { name: "Kolkata", icon: Castle },
-  { name: "Bengaluru", icon: Building },
-  { name: "Hyderabad", icon: Landmark },
-  { name: "Chandigarh", icon: School },
+  {
+    name: "Delhi NCR",
+    image:
+      "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=150&q=80",
+  },
+  {
+    name: "Mumbai",
+    image:
+      "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=150&q=80",
+  },
+  {
+    name: "Kolkata",
+    image:
+      "https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=150&q=80",
+  },
+  {
+    name: "Bengaluru",
+    image:
+      "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=150&q=80",
+  },
+  {
+    name: "Hyderabad",
+    image:
+      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=150&q=80",
+  },
+  {
+    name: "Chandigarh",
+    image:
+      "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=150&q=80",
+  },
 ];
 
 const ALL_CITIES = [
@@ -196,17 +221,15 @@ export default function LocationScreen() {
           </Text>
           <View style={styles.grid}>
             {POPULAR.map((item, index) => {
-              const Icon = item.icon || Building2;
               return (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.cityCard, { backgroundColor: cardColor }]}
+                  style={styles.cityCard}
+                  activeOpacity={0.75}
                 >
-                  <Icon
-                    size={32}
-                    color={tintColor}
-                    strokeWidth={1}
-                    style={styles.cityIcon}
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.cityImage}
                   />
                   <Text
                     style={[styles.cityText, { color: textColor }]}
@@ -351,19 +374,22 @@ const styles = StyleSheet.create({
   },
   cityCard: {
     width: "31%",
-    aspectRatio: 1,
-    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    padding: 8,
+    marginBottom: 16,
   },
-  cityIcon: {
-    marginBottom: 10,
-    opacity: 0.8,
+  cityImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.08)",
   },
   cityText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#FFFFFF",
     textAlign: "center",
   },
 

@@ -6,6 +6,7 @@ import {
   View as DefaultView,
   Animated,
   Dimensions,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -68,7 +69,12 @@ const CircularProgressAvatar = ({ progress }: { progress: number }) => {
       </Svg>
       {/* Avatar inner */}
       <DefaultView style={styles.avatarInner}>
-        <User color="#7C3AED" size={26} strokeWidth={1.8} />
+        <Image
+          source={{
+            uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+          }}
+          style={styles.avatarImage}
+        />
       </DefaultView>
     </DefaultView>
   );
@@ -233,6 +239,27 @@ export default function ProfileScreen() {
         {/* Pass banner */}
         <PassBanner />
 
+        {/* Dynamic promo banner with a real image */}
+        <TouchableOpacity style={styles.promoBanner} activeOpacity={0.9}>
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=600&q=80",
+            }}
+            style={styles.promoImage}
+          />
+          <DefaultView style={styles.promoOverlay}>
+            <DefaultView style={styles.promoContent}>
+              <Text style={styles.promoTitle}>District Exclusive</Text>
+              <Text style={styles.promoSubtitle}>
+                Get up to 50% off on top experiences near you
+              </Text>
+            </DefaultView>
+            <DefaultView style={styles.promoPill}>
+              <Text style={styles.promoPillText}>Explore</Text>
+            </DefaultView>
+          </DefaultView>
+        </TouchableOpacity>
+
         {/* All Bookings */}
         <Text style={styles.sectionLabel}>All bookings</Text>
         <ScrollView
@@ -313,6 +340,58 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#09090B",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 100,
+  },
+  promoBanner: {
+    height: 140,
+    borderRadius: 18,
+    overflow: "hidden",
+    marginBottom: 28,
+    position: "relative",
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  promoImage: {
+    width: "100%",
+    height: "100%",
+  },
+  promoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+  promoContent: {
+    flex: 1,
+    paddingRight: 15,
+  },
+  promoTitle: {
+    fontFamily: "SpaceGrotesk_700Bold",
+    fontSize: 16,
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+  promoSubtitle: {
+    fontFamily: "SpaceGrotesk_400Regular",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.7)",
+  },
+  promoPill: {
+    backgroundColor: "#A855F7",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  promoPillText: {
+    fontFamily: "SpaceGrotesk_700Bold",
+    fontSize: 12,
+    color: "#FFFFFF",
   },
   header: {
     flexDirection: "row",
